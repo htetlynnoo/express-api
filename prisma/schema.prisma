@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  name  String
+  username String  @unique
+  bio String?
+  password String 
+  posts Post[]
+  likes Like[]
+  comments Comment[]
+  follows  Follow[] @relation("follower")//example 1.4k follows 
+  followers Follow[] @relation("following")
+  notifications        Notification[]  @relation("notificationReceiver")
+  notificationsActed   Notification[] @relation("notificationActor")
+  created DateTime @default(now())
+}
+
+model Post {
+  id        Int     @id @default(autoincrement())
+  content     String
+  user    User    @relation(fields: [userId], references: [id])
+  userId  Int
+  likes Like []
+  comments Comment[]
+  notifications Notification[]
+  created DateTime @default(now())
+}
+  
+model Like {
+  id        Int     @id @default(autoincrement())
+  post Post @relation(fields: [postId], references: [id])
+  postId Int
+  user    User    @relation(fields: [userId], references: [id])
+  userId  Int
+  
+  
+}
+model Comment {
+     id     Int    @id @default(autoincrement())
+     content String
+     post   Post   @relation(fields: [postId], references: [id])
+     postId Int
+     user   User   @relation(fields: [userId], references: [id])
+     userId Int
+     created DateTime @default(now())
+ }
+  
+
+  model Follow {
+     id        Int    @id @default(autoincrement())
+     follower  User   @relation("follower", fields: [followerId], references: [id])//follow tk thu 
+     followerId Int
+     following User   @relation("following", fields: [followingId], references: [id])//follow khan ya tk thu
+     followingId Int
+     created   DateTime @default(now())
+     @@unique([followerId, followingId])
+ }
+
+ model Notification {
+     id        Int      @id @default(autoincrement())
+     type      String   // "LIKE", "COMMENT", or "FOLLOW"
+     read      Boolean  @default(false)
+     user      User     @relation("notificationReceiver", fields: [userId], references: [id])
+     userId    Int
+     actor     User     @relation("notificationActor", fields: [actorId], references: [id])
+     actorId   Int
+     post      Post?    @relation(fields: [postId], references: [id])
+     postId    Int?
+     created   DateTime @default(now())
+ }
