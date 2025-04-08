@@ -13,10 +13,12 @@ app.use(cors());
 const { usersRouter } = require("./routers/users");
 const { postsRouter } = require("./routers/posts");
 const { commentsRouter } = require("./routers/comments");
+const {auth, isOwner} = require("./middlewares/auth");
 
 app.use(usersRouter);
 app.use(postsRouter);
 app.use(commentsRouter);
+app.use(auth, isOwner);
 
 app.listen(8080, () => {
     console.log("Express is running at 8080");
