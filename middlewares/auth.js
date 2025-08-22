@@ -55,16 +55,26 @@ async function auth(req, res, next) {
 
 function isOwner(type) {
     return async (req, res, next) => {
-        if (type === "post") {
-            const id = req.params.id;
-            const post = await prisma.post.findUnique({
+        const { id } = req.params;
+        const user = res.locals.user;
+
+        if (type == "post") {
+            const post = await prisma.post.findunique({
                 where: { id: Number(id) },
             });
-            if (res.locals.user.id === post.userId) {
-                return next();
-            }
+
+            if (post.userId == user.id) return next();
         }
-        return res.status(403).json({ msg: "forbidden" });
+
+        if (type == "comment") {
+            const comment = await prisma.comment.findUnique({
+                where: { id: Number(id) },
+                include: { post: true },
+            });
+
+            if (comment.userId == user.id || comment.post.userId == user.id)
+                return next();
+        }
     };
 }
 module.exports = { auth, isOwner };
