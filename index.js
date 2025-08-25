@@ -1,30 +1,43 @@
 const express = require("express");
 const app = express();
-
+const prisma = require("./prismaClient");
 
 const bodyParser = require("body-parser");
-
 app.use(bodyParser.urlencoded({ extended: false }));
-
 app.use(bodyParser.json());
 
 const cors = require("cors");
 app.use(cors());
-const { usersRouter } = require("./routers/users");
-const { postsRouter } = require("./routers/posts");
-const { commentsRouter } = require("./routers/comments");
-const {auth, isOwner} = require("./middlewares/auth");
 
-app.use(usersRouter);
+const { usersRouter } = require("./routers/users");
+app.use(usersRouter); //router name thet mht yan
+
+const { postsRouter } = require("./routers/posts");
 app.use(postsRouter);
+
+const { commentsRouter } = require("./routers/comments");
 app.use(commentsRouter);
+
+const { auth, isOwner } = require("./middlewares/auth");
 app.use(auth, isOwner);
 
 app.listen(8080, () => {
     console.log("Express is running at 8080");
 });
 
-app.post("/posts/:id/like", auth, async (req, res) => {
+const gracefulShutdown = async () => {
+    await prisma.$disconnect();
+    console.log("Disconnected from the database");
+    server.close(() => {
+        console.log("Server closed");
+        process.exit(0);
+    });
+};
+
+process.on("SIGINT", gracefulShutdown);
+process.on("SIGTERM", gracefulShutdown);
+
+/* app.post("/posts/:id/like", auth, async (req, res) => {
     const { id } = req.params;
     const user = res.locals.user; // dr ka auth htl ka nay lr tr
 
@@ -69,4 +82,4 @@ app.delete("/posts/:id/like", auth, async (req, res) => {
     } catch (err) {
         res.status(500).json({ msg: err.message });
     }
-});
+}); */

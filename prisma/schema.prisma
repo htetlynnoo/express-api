@@ -19,16 +19,17 @@ model User {
   posts Post[]
   likes Like[]
   comments Comment[]
-  follows  Follow[] @relation("follower")//example 1.4k follows 
-  followers Follow[] @relation("following")
+  following Follow[] @relation("who follows")
+  followers Follow[] @relation("who got followed")
   notifications        Notification[]  @relation("notificationReceiver")
-  notificationsActed   Notification[] @relation("notificationActor")
+  makeNotifications  Notification[] @relation("notificationActor")
   created DateTime @default(now())
 }
 
 model Post {
   id        Int     @id @default(autoincrement())
   content     String
+  picture String
   user    User    @relation(fields: [userId], references: [id])
   userId  Int
   likes Like []
@@ -41,8 +42,8 @@ model Like {
   id        Int     @id @default(autoincrement())
   post Post @relation(fields: [postId], references: [id])
   postId Int
-  user    User    @relation(fields: [userId], references: [id])
-  userId  Int
+  actor    User    @relation(fields: [actorId], references: [id])
+  actorId  Int
   
   
 }
@@ -51,28 +52,28 @@ model Comment {
      content String
      post   Post   @relation(fields: [postId], references: [id])
      postId Int
-     user   User   @relation(fields: [userId], references: [id])
-     userId Int
+     commentor User   @relation(fields: [commentorId], references: [id])
+     commentorId Int
      created DateTime @default(now())
  }
   
 
   model Follow {
      id        Int    @id @default(autoincrement())
-     follower  User   @relation("follower", fields: [followerId], references: [id])//follow tk thu 
-     followerId Int
-     following User   @relation("following", fields: [followingId], references: [id])//follow khan ya tk thu
-     followingId Int
+     aPersonWhoFollow User   @relation("who follows", fields: [aPersonWhoFollowId ], references: [id])//follow tk thu 
+     aPersonWhoFollowId Int
+     aPersonWhoGotFollowed User   @relation("who got followed", fields: [aPersonWhoGotFollowedId ], references: [id])//follow khan ya tk thu
+     aPersonWhoGotFollowedId Int
      created   DateTime @default(now())
-     @@unique([followerId, followingId])
+     @@unique([ aPersonWhoFollowId , aPersonWhoGotFollowedId ])
  }
 
  model Notification {
      id        Int      @id @default(autoincrement())
      type      String   // "LIKE", "COMMENT", or "FOLLOW"
      read      Boolean  @default(false)
-     user      User     @relation("notificationReceiver", fields: [userId], references: [id])
-     userId    Int
+     receiver     User     @relation("notificationReceiver", fields: [receiverId], references: [id])
+     receiverId    Int
      actor     User     @relation("notificationActor", fields: [actorId], references: [id])
      actorId   Int
      post      Post?    @relation(fields: [postId], references: [id])
