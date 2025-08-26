@@ -24,10 +24,10 @@ router.post("/posts/:id/comments", auth, async (req, res) => {
             data: {
                 content,
                 postId: parseInt(postId),
-                userId: userId,
+                commentorId: userId,
             },
             include: {
-                user: true,
+                commentor: true,
             },
         });
 
@@ -51,7 +51,7 @@ router.delete("/comments/:id", auth, async (req, res) => {
             return res.status(404).json({ error: "Comment not found" });
         }
 
-        if (comment.userId !== res.locals.user.id) {
+        if (comment.commentorId !== res.locals.user.id) {
             return res.status(403).json({ error: "Not authorized" });
         }
 

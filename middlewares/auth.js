@@ -29,8 +29,8 @@ async function auth(req, res, next) {
             include: {
                 _count: {
                     select: {
+                        following: true,
                         followers: true,
-                        follows: true,
                     },
                 },
             },
@@ -44,7 +44,7 @@ async function auth(req, res, next) {
         res.locals.user = {
             ...user,
             followersCount: user._count.followers,
-            followingCount: user._count.follows,
+            followingCount: user._count.following,
         };
         next();
     } catch (error) {
@@ -72,7 +72,10 @@ function isOwner(type) {
                 include: { post: true },
             });
 
-            if (comment.userId == user.id || comment.post.userId == user.id)
+            if (
+                comment.commentorId == user.id ||
+                comment.post.userId == user.id
+            )
                 return next();
         }
     };

@@ -14,6 +14,7 @@ const bodyParser = require("body-parser");
 router.use(bodyParser.urlencoded({ extended: false }));
 
 router.use(bodyParser.json());
+
 const cors = require("cors");
 router.use(cors());
 
@@ -37,7 +38,7 @@ router.get("/users/:id", async (req, res) => {
                         user: true,
                         likes: true,
                         comments: {
-                            include: { user: true },
+                            include: { commentor: true },
                         },
                     },
                 },
@@ -58,7 +59,7 @@ router.get("/users/:id", async (req, res) => {
     }
 });
 
-router.post("/users", async (req, res) => {
+router.post("/register", async (req, res) => {
     const { name, username, bio, password } = req.body;
     if (!name) {
         console.log("no name");
@@ -151,8 +152,8 @@ router.post("/users/:id/follow", auth, async (req, res) => {
         // Create follow relationship
         const follow = await prisma.follow.create({
             data: {
-                followerId,
-                followingId,
+                aPersonWhoFollowId: followerId,
+                aPersonWhoGotFollowedId: followingId,
             },
         });
 
@@ -183,9 +184,9 @@ router.delete("/users/:id/follow", auth, async (req, res) => {
         // Delete follow relationship
         const follow = await prisma.follow.delete({
             where: {
-                followerId_followingId: {
-                    followerId,
-                    followingId,
+                aPersonWhoFollowId_aPersonWhoGotFollowedId: {
+                    aPersonWhoFollowId: followerId,
+                    aPersonWhoGotFollowedId: followingId,
                 },
             },
         });

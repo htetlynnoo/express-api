@@ -12,9 +12,9 @@ router.get("/posts/following", auth, async (req, res) => {
         const posts = await prisma.post.findMany({
             where: {
                 user: {
-                    followers: {
+                    following: {
                         some: {
-                            followerId: res.locals.user.id, // d user follow lote htr tk followers tway ko shr pr
+                            aPersonWhoFollowId: res.locals.user.id, // d user follow lote htr tk followers tway ko shr pr
                         },
                     },
                 },
@@ -36,7 +36,7 @@ router.get("/posts/following", auth, async (req, res) => {
                 user: true,
                 likes: true,
                 comments: {
-                    include: { user: true },
+                    include: { commentor: true },
                 },
             },
             take: 20,
@@ -56,7 +56,7 @@ router.get("/posts", async (req, res) => {
             user: true,
             likes: true,
             comments: {
-                include: { user: true },
+                include: { commentor: true },
             },
         },
         take: 20,
@@ -73,7 +73,7 @@ router.get("/posts/:id", async (req, res) => {
             user: true,
             likes: true,
             comments: {
-                include: { user: true },
+                include: { commentor: true },
             },
         },
         where: { id: Number(id) },
@@ -96,7 +96,7 @@ router.post("/posts", auth, async (req, res) => {
             user: true,
             likes: true,
             comments: {
-                include: { user: true },
+                include: { commentor: true },
             },
         },
     });
@@ -122,7 +122,7 @@ router.post("/posts/:id/like", auth, async (req, res) => {
         const like = await prisma.like.create({
             data: {
                 postId: Number(id),
-                userId: user.id,
+                actorId: user.id,
             },
         });
 
@@ -132,7 +132,7 @@ router.post("/posts/:id/like", auth, async (req, res) => {
                 user: true,
                 likes: true,
                 comments: {
-                    include: { user: true },
+                    include: { commentor: true },
                 },
             },
         });
@@ -154,7 +154,7 @@ router.delete("/posts/:id/like", auth, async (req, res) => {
         const result = await prisma.like.deleteMany({
             where: {
                 postId: Number(id),
-                userId: user.id,
+                actorId: user.id,
             },
         });
 
@@ -164,7 +164,7 @@ router.delete("/posts/:id/like", auth, async (req, res) => {
                 user: true,
                 likes: true,
                 comments: {
-                    include: { user: true },
+                    include: { commentor: true },
                 },
             },
         });
