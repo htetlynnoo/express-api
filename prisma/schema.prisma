@@ -30,7 +30,7 @@ model Post {
   id        Int     @id @default(autoincrement())
   content     String
   picture String
-  user    User    @relation(fields: [userId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId  Int
   likes Like []
   comments Comment[]
@@ -40,9 +40,9 @@ model Post {
   
 model Like {
   id        Int     @id @default(autoincrement())
-  post Post @relation(fields: [postId], references: [id])
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId Int
-  actor    User    @relation(fields: [actorId], references: [id])
+  actor    User    @relation(fields: [actorId], references: [id], onDelete: Cascade)
   actorId  Int
   
   
@@ -50,9 +50,9 @@ model Like {
 model Comment {
      id     Int    @id @default(autoincrement())
      content String
-     post   Post   @relation(fields: [postId], references: [id])
+     post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
      postId Int
-     commentor User   @relation(fields: [commentorId], references: [id])
+     commentor User   @relation(fields: [commentorId], references: [id], onDelete: Cascade)
      commentorId Int
      created DateTime @default(now())
  }
@@ -60,9 +60,9 @@ model Comment {
 
   model Follow {
      id        Int    @id @default(autoincrement())
-     aPersonWhoFollow User   @relation("who follows", fields: [aPersonWhoFollowId ], references: [id])//follow tk thu 
+     aPersonWhoFollow User   @relation("who follows", fields: [aPersonWhoFollowId ], references: [id], onDelete: Cascade)//follow tk thu 
      aPersonWhoFollowId Int
-     aPersonWhoGotFollowed User   @relation("who got followed", fields: [aPersonWhoGotFollowedId ], references: [id])//follow khan ya tk thu
+     aPersonWhoGotFollowed User   @relation("who got followed", fields: [aPersonWhoGotFollowedId ], references: [id], onDelete: Cascade)//follow khan ya tk thu
      aPersonWhoGotFollowedId Int
      created   DateTime @default(now())
      @@unique([ aPersonWhoFollowId , aPersonWhoGotFollowedId ])
@@ -72,11 +72,13 @@ model Comment {
      id        Int      @id @default(autoincrement())
      type      String   // "LIKE", "COMMENT", or "FOLLOW"
      read      Boolean  @default(false)
-     receiver     User     @relation("notificationReceiver", fields: [receiverId], references: [id])
+     receiver     User     @relation("notificationReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
      receiverId    Int
-     actor     User     @relation("notificationActor", fields: [actorId], references: [id])
+     actor     User     @relation("notificationActor", fields: [actorId], references: [id], onDelete: Cascade)
      actorId   Int
-     post      Post?    @relation(fields: [postId], references: [id])
+     post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
      postId    Int?
      created   DateTime @default(now())
  }
+
+//  Post? → The relation to Post is optional. A notification may or may not be related to a post (e.g., a "FOLLOW" notification wouldn’t have a post).

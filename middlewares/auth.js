@@ -59,7 +59,13 @@ function isOwner(type) {
         const user = res.locals.user;
 
         if (type == "post") {
-            const post = await prisma.post.findunique({
+            await prisma.like.deleteMany({
+                where: { postId: Number(id) },
+            });
+            await prisma.comment.deleteMany({
+                where: { postId: Number(id) },
+            });
+            const post = await prisma.post.findUnique({
                 where: { id: Number(id) },
             });
 

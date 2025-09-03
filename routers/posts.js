@@ -12,7 +12,7 @@ router.get("/posts/following", auth, async (req, res) => {
         const posts = await prisma.post.findMany({
             where: {
                 user: {
-                    following: {
+                    followers: {
                         some: {
                             aPersonWhoFollowId: res.locals.user.id, // d user follow lote htr tk followers tway ko shr pr
                         },
@@ -83,15 +83,17 @@ router.get("/posts/:id", async (req, res) => {
 });
 
 router.post("/posts", auth, async (req, res) => {
-    const { content } = req.body;
+    const { content, picture } = req.body;
     const user = res.locals.user;
 
-    if (!content) {
-        return res.status(400).json({ msg: "content is required" });
+    if (!content && !picture) {
+        return res
+            .status(400)
+            .json({ msg: "content and picture are required" });
     }
 
     const post = await prisma.post.create({
-        data: { content, userId: Number(user.id) },
+        data: { content, userId: Number(user.id), picture },
         include: {
             user: true,
             likes: true,
@@ -114,6 +116,23 @@ router.delete("/posts/:id", auth, isOwner("post"), async (req, res) => {
     res.json(post);
 });
 
+router.get("/likes/posts/:id", async (req, res) => {
+    const { id } = req.params();
+
+    const data = await prisma.like.findMany({
+        where: {
+            postId: Number(id),
+        },
+        include: {
+            actor: {
+                include: {
+                    followers: true,
+                    following: true,
+                },
+            },
+        },
+    });
+});
 router.post("/posts/:id/like", auth, async (req, res) => {
     const { id } = req.params;
     const user = res.locals.user;

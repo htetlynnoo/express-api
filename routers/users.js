@@ -21,6 +21,14 @@ router.use(cors());
 router.get("/verify", auth, async (req, res) => {
     const user = await prisma.user.findUnique({
         where: { id: res.locals.user.id },
+        include: {
+            _count: {
+                select: {
+                    following: true,
+                    followers: true,
+                },
+            },
+        },
     });
     res.json(user);
 });
@@ -43,6 +51,12 @@ router.get("/users/:id", async (req, res) => {
                     },
                 },
                 followers: true,
+                _count: {
+                    select: {
+                        following: true,
+                        followers: true,
+                    },
+                },
             },
         });
 
