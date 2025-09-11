@@ -117,7 +117,7 @@ router.delete("/posts/:id", auth, isOwner("post"), async (req, res) => {
 });
 
 router.get("/likes/posts/:id", async (req, res) => {
-    const { id } = req.params();
+    const { id } = req.params;
 
     const data = await prisma.like.findMany({
         where: {
@@ -132,7 +132,9 @@ router.get("/likes/posts/:id", async (req, res) => {
             },
         },
     });
+    res.json(data);
 });
+
 router.post("/posts/:id/like", auth, async (req, res) => {
     const { id } = req.params;
     const user = res.locals.user;
