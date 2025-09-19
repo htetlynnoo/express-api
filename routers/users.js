@@ -144,73 +144,138 @@ router.get("/search", async (req, res) => {
 });
 
 // Follow a user
+// router.post("/users/:id/follow", auth, async (req, res) => {
+//     const followingId = parseInt(req.params.id); // ko ka twrr follow mk thu
+//     const followerId = res.locals.user.id; // koh yk id
+
+//     try {
+//         // Check if trying to follow self
+//         if (followerId === followingId) {
+//             return res.status(400).json({ error: "Cannot follow yourself" });
+//         }
+
+//         // Check if user exists
+//         const user = await prisma.user.findUnique({
+//             where: { id: followingId },
+//         });
+
+//         if (!user) {
+//             return res.status(404).json({ error: "User not found" });
+//         }
+
+//         // Create follow relationship
+//         const follow = await prisma.follow.create({
+//             data: {
+//                 aPersonWhoFollowId: followerId,
+//                 aPersonWhoGotFollowedId: followingId,
+//             },
+//         });
+
+//         res.json(follow);
+//     } catch (error) {
+//         // Handle unique constraint violation
+//         if (error.code === "P2002") {
+//             return res
+//                 .status(400)
+//                 .json({ error: "Already following this user" });
+//         }
+//         console.error(error.message);
+//         res.status(500).json({ error: error.message });
+//     }
+// });
+
+// // Unfollow a user
+// router.delete("/users/:id/follow", auth, async (req, res) => {
+//     const followingId = parseInt(req.params.id);
+//     const followerId = res.locals.user.id;
+
+//     try {
+//         // Check if trying to unfollow self
+//         if (followerId === followingId) {
+//             return res.status(400).json({ error: "Cannot unfollow yourself" });
+//         }
+
+//         // Delete follow relationship
+//         const follow = await prisma.follow.delete({
+//             where: {
+//                 aPersonWhoFollowId_aPersonWhoGotFollowedId: {
+//                     aPersonWhoFollowId: followerId,
+//                     aPersonWhoGotFollowedId: followingId,
+//                 },
+//             },
+//         });
+
+//         res.json(follow);
+//     } catch (error) {
+//         // Handle case when not following
+//         if (error.code === "P2025") {
+//             return res.status(404).json({ error: "Not following this user" });
+//         }
+//         console.error(error.message);
+//         res.status(500).json({ error: error.message });
+//     }
+// });
+
 router.post("/users/:id/follow", auth, async (req, res) => {
-    const followingId = parseInt(req.params.id); // ko ka twrr follow mk thu
-    const followerId = res.locals.user.id; // koh yk id
+    const aPersonWhoFollowId = res.locals.user.id;
+    const aPersonWhoGotFollowedId = parseInt(req.params.id);
 
     try {
-        // Check if trying to follow self
-        if (followerId === followingId) {
+        if (aPersonWhoFollowId === aPersonWhoGotFollowedId) {
             return res.status(400).json({ error: "Cannot follow yourself" });
         }
 
-        // Check if user exists
-        const user = await prisma.user.findUnique({
-            where: { id: followingId },
+        const targetUser = await prisma.user.findUnique({
+            where: { id: aPersonWhoGotFollowedId },
         });
 
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
+        if (!targetUser) {
+            return res.status(404).json({
+                error: "There is no such kind of user you want to follow",
+            });
         }
 
-        // Create follow relationship
-        const follow = await prisma.follow.create({
+        const followUser = await prisma.follow.create({
             data: {
-                aPersonWhoFollowId: followerId,
-                aPersonWhoGotFollowedId: followingId,
+                aPersonWhoFollowId,
+                aPersonWhoGotFollowedId,
             },
         });
 
-        res.json(follow);
+        return res.status(201).json(followUser);
     } catch (error) {
-        // Handle unique constraint violation
         if (error.code === "P2002") {
-            return res
-                .status(400)
-                .json({ error: "Already following this user" });
+            return res.status(400).json({ error: "Already Following user" });
         }
+
         console.error(error.message);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Unfollow a user
-router.delete("/users/:id/follow", auth, async (req, res) => {
-    const followingId = parseInt(req.params.id);
-    const followerId = res.locals.user.id;
+router.delete("/users/:id/unfollow", auth, async (req, res) => {
+    const aPersonWhoFollowId = res.locals.user.id;
+    const aPersonWhoGotFollowedId = parseInt(req.params.id);
 
     try {
-        // Check if trying to unfollow self
-        if (followerId === followingId) {
-            return res.status(400).json({ error: "Cannot unfollow yourself" });
+        if (aPersonWhoFollowId === aPersonWhoGotFollowedId) {
+            return res.status(400).json({ error: "cannot unfollow yourself" });
         }
 
-        // Delete follow relationship
-        const follow = await prisma.follow.delete({
+        const unfollowUser = await prisma.follow.delete({
             where: {
                 aPersonWhoFollowId_aPersonWhoGotFollowedId: {
-                    aPersonWhoFollowId: followerId,
-                    aPersonWhoGotFollowedId: followingId,
+                    aPersonWhoFollowId,
+                    aPersonWhoGotFollowedId,
                 },
             },
         });
-
-        res.json(follow);
+        return res.status(201).json(unfollowUser);
     } catch (error) {
-        // Handle case when not following
         if (error.code === "P2025") {
-            return res.status(404).json({ error: "Not following this user" });
+            return res.status(400).json({ error: "Not follow this user yet" });
         }
+
         console.error(error.message);
         res.status(500).json({ error: error.message });
     }
