@@ -121,27 +121,27 @@ router.post("/login", async (req, res) => {
     }
 });
 
-router.get("/search", async (req, res) => {
-    const { q } = req.query;
+// router.get("/search", async (req, res) => {
+//     const { q } = req.query;
 
-    if (!q) {
-        return res.status(400).json({ error: "Search query is required" });
-    }
+//     if (!q) {
+//         return res.status(400).json({ error: "Search query is required" });
+//     }
 
-    try {
-        const users = await prisma.user.findMany({
-            where: {
-                OR: [{ name: { contains: q } }, { username: { contains: q } }],
-            },
-            take: 10,
-        });
+//     try {
+//         const users = await prisma.user.findMany({
+//             where: {
+//                 OR: [{ name: { contains: q } }, { username: { contains: q } }],
+//             },
+//             take: 10,
+//         });
 
-        res.json(users);
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: error.message });
-    }
-});
+//         res.json(users);
+//     } catch (error) {
+//         console.error(error.message);
+//         res.status(500).json({ error: error.message });
+//     }
+// });
 
 // Follow a user
 // router.post("/users/:id/follow", auth, async (req, res) => {
@@ -278,6 +278,37 @@ router.delete("/users/:id/unfollow", auth, async (req, res) => {
 
         console.error(error.message);
         res.status(500).json({ error: error.message });
+    }
+});
+
+//search
+router.get("/search", async (req, res) => {
+    const { q } = req.query;
+
+    if (!q || typeof q !== "string") {
+        return res
+            .status(400)
+            .json({ error: "Query parameter 'q' is missing" });
+    }
+
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                name: {
+                    contains: q,
+                },
+            },
+            include: {
+                following: true,
+                followers: true,
+            },
+            take: 20,
+        });
+
+        return res.status(200).json(users);
+    } catch (error) {
+        console.error("Search error:", error);
+        return res.status(500).json({ error: "Internal server error" });
     }
 });
 
