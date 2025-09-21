@@ -25,20 +25,20 @@ app.get("/", (req, res) => {
     res.send("Express ");
 });
 
-app.listen(8080, () => {
-    console.log("Express is running at 8080");
-});
+// app.listen(8080, () => {
+//     console.log("Express is running at 8080");
+// });
 
-const gracefulShutdown = async () => {
-    await $disconnect();
-    console.log("Disconnected from the database");
-    server.close(() => {
-        console.log("Server closed");
-        process.exit(0);
-    });
-};
+// const gracefulShutdown = async () => {
+//     await $disconnect();
+//     console.log("Disconnected from the database");
+//     server.close(() => {
+//         console.log("Server closed");
+//         process.exit(0);
+//     });
+// };
 
-process.on("SIGINT", gracefulShutdown);
-process.on("SIGTERM", gracefulShutdown);
+// process.on("SIGINT", gracefulShutdown);
+// process.on("SIGTERM", gracefulShutdown);
 
 export default app;
