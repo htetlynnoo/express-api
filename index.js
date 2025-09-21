@@ -1,6 +1,6 @@
 import express from "express";
 const app = express();
-import { $disconnect } from "../prismaClient";
+import { $disconnect } from "./prismaClient";
 
 import { urlencoded, json } from "body-parser";
 app.use(urlencoded({ extended: false }));
@@ -9,17 +9,21 @@ app.use(json());
 import cors from "cors";
 app.use(cors());
 
-import { usersRouter } from "../routers/users";
+import { usersRouter } from "./routers/users";
 app.use(usersRouter); //router name thet mht yan
 
-import { postsRouter } from "../routers/posts";
+import { postsRouter } from "./routers/posts";
 app.use(postsRouter);
 
-import { commentsRouter } from "../routers/comments";
+import { commentsRouter } from "./routers/comments";
 app.use(commentsRouter);
 
-import { auth, isOwner } from "../middlewares/auth";
+import { auth, isOwner } from "./middlewares/auth";
 app.use(auth, isOwner);
+
+app.get("/", (req, res) => {
+    res.send("Express ");
+});
 
 app.listen(8080, () => {
     console.log("Express is running at 8080");
