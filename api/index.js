@@ -1,24 +1,24 @@
-const express = require("express");
+import express from "express";
 const app = express();
-const prisma = require("../prismaClient");
+import { $disconnect } from "../prismaClient";
 
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+import { urlencoded, json } from "body-parser";
+app.use(urlencoded({ extended: false }));
+app.use(json());
 
-const cors = require("cors");
+import cors from "cors";
 app.use(cors());
 
-const { usersRouter } = require("../routers/users");
+import { usersRouter } from "../routers/users";
 app.use(usersRouter); //router name thet mht yan
 
-const { postsRouter } = require("../routers/posts");
+import { postsRouter } from "../routers/posts";
 app.use(postsRouter);
 
-const { commentsRouter } = require("../routers/comments");
+import { commentsRouter } from "../routers/comments";
 app.use(commentsRouter);
 
-const { auth, isOwner } = require("../middlewares/auth");
+import { auth, isOwner } from "../middlewares/auth";
 app.use(auth, isOwner);
 
 app.listen(8080, () => {
@@ -26,7 +26,7 @@ app.listen(8080, () => {
 });
 
 const gracefulShutdown = async () => {
-    await prisma.$disconnect();
+    await $disconnect();
     console.log("Disconnected from the database");
     server.close(() => {
         console.log("Server closed");
@@ -37,4 +37,4 @@ const gracefulShutdown = async () => {
 process.on("SIGINT", gracefulShutdown);
 process.on("SIGTERM", gracefulShutdown);
 
-module.exports = app;
+export default app;
