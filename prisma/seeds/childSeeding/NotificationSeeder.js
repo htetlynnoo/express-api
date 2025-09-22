@@ -10,6 +10,7 @@ async function NotificationSeeder() {
         await prisma.notification.create({
             data: {
                 type: "LIKE",
+                content: "likes your post",
                 receiverId: 5,
                 actorId: faker.number.int({ min: 1, max: 4 }),
                 postId: faker.number.int({ min: 1, max: 20 }),
@@ -24,6 +25,7 @@ async function NotificationSeeder() {
         await prisma.notification.create({
             data: {
                 type: "COMMENT",
+                content: "commented on your post",
                 receiverId: 5,
                 actorId: faker.number.int({ min: 1, max: 4 }),
                 postId: faker.number.int({ min: 1, max: 20 }),
