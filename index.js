@@ -1,30 +1,37 @@
-import express from "express";
+// index.js
+const express = require("express");
+const { $disconnect } = require("./prismaClient");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+
+const { usersRouter } = require("./routers/users");
+const { postsRouter } = require("./routers/posts");
+const { commentsRouter } = require("./routers/comments");
+const { auth, isOwner } = require("./middlewares/auth");
+
 const app = express();
-import { $disconnect } from "./prismaClient";
 
-import { urlencoded, json } from "body-parser";
-app.use(urlencoded({ extended: false }));
-app.use(json());
+// Body-parser
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-import cors from "cors";
+// CORS
 app.use(cors());
 
-import { usersRouter } from "./routers/users";
-app.use(usersRouter); //router name thet mht yan
-
-import { postsRouter } from "./routers/posts";
+// Routers
+app.use(usersRouter);
 app.use(postsRouter);
-
-import { commentsRouter } from "./routers/comments";
 app.use(commentsRouter);
 
-import { auth, isOwner } from "./middlewares/auth";
+// Middlewares
 app.use(auth, isOwner);
 
-app.listen(8080, () => {
+// Start server
+const server = app.listen(8080, () => {
     console.log("Express is running at 8080");
 });
 
+// Graceful shutdown
 const gracefulShutdown = async () => {
     await $disconnect();
     console.log("Disconnected from the database");
@@ -37,4 +44,5 @@ const gracefulShutdown = async () => {
 process.on("SIGINT", gracefulShutdown);
 process.on("SIGTERM", gracefulShutdown);
 
-export default app;
+// Export app
+module.exports = app;

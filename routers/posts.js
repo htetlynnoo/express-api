@@ -5,6 +5,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const { auth, isOwner } = require("../middlewares/auth");
+const { addNoti } = require("./users");
 
 router.get("/posts/following", auth, async (req, res) => {
     try {
@@ -158,6 +159,14 @@ router.post("/posts/:id/like", auth, async (req, res) => {
             },
         });
 
+        await addNoti({
+            type: "LIKE",
+            content: `likes your post`,
+
+            actorId: user.id,
+            postId: id,
+            receiverId: post.userId,
+        });
         res.json(post);
     } catch (err) {
         if (err.code === "P2002") {

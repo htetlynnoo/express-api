@@ -75,6 +75,7 @@ router.get("/users/:id", async (req, res) => {
 
 router.post("/register", async (req, res) => {
     const { name, username, bio, password } = req.body;
+
     if (!name) {
         console.log("no name");
     }
@@ -83,6 +84,12 @@ router.post("/register", async (req, res) => {
             .status(400)
             .json({ msg: "name, username and password are required" });
     }
+
+    const check = await prisma.user.findUnique({
+        where: { username },
+    });
+
+    if (check) return res.status(400).json({ msg: "Username already exited" });
 
     const hash = await bcrypt.hash(password, 10);
 
@@ -217,4 +224,74 @@ router.get("/search", async (req, res) => {
     }
 });
 
-module.exports = { usersRouter: router };
+//notifations
+
+router.get("/notis", auth, async (req, res) => {
+    const { id } = res.locals.user;
+
+    try {
+        const notiData = await prisma.notification.findMany({
+            where: {
+                receiverId: Number(id),
+            },
+            include: {
+                actor: true,
+            },
+            take: 20,
+            orderBy: { id: "desc" },
+        });
+        return res.status(200).json(notiData);
+    } catch (error) {
+        console.error("Search error:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+router.put("/notis/readall", auth, async (req, res) => {
+    const { id } = res.locals.user;
+
+    await prisma.notification.updateMany({
+        where: {
+            receiverId: Number(id),
+        },
+        data: {
+            read: true,
+        },
+    });
+    res.status(201).json({ msg: "all notifications are read" });
+});
+
+router.put("/notis/:id/read", auth, async (req, res) => {
+    const { id } = req.params;
+    console.log("ID type:", typeof Number(id), "Value:", Number(id));
+
+    try {
+        const notiRead = await prisma.notification.update({
+            where: { id: Number(id) },
+            data: { read: true },
+        });
+
+        res.status(200).json(notiRead);
+        console.log("readnoti", notiRead);
+    } catch (error) {
+        console.error("my error", error);
+        res.status(404).json({ error: "Notification not found" });
+    }
+});
+
+async function addNoti({ type, content, receiverId, postId, actorId }) {
+    if (Number(receiverId) === Number(actorId)) return false;
+
+    return await prisma.notification.create({
+        data: {
+            type,
+            content,
+
+            receiverId: Number(receiverId),
+            postId: Number(postId),
+            actorId: Number(actorId),
+        },
+    });
+}
+
+module.exports = { usersRouter: router, addNoti };
