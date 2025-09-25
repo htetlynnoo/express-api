@@ -18,6 +18,8 @@ router.use(bodyParser.json());
 const cors = require("cors");
 router.use(cors());
 
+const { clients } = require("./ws");
+
 router.get("/verify", auth, async (req, res) => {
     const user = await prisma.user.findUnique({
         where: { id: res.locals.user.id },
@@ -281,6 +283,16 @@ router.put("/notis/:id/read", auth, async (req, res) => {
 
 async function addNoti({ type, content, receiverId, postId, actorId }) {
     if (Number(receiverId) === Number(actorId)) return false;
+    console.log(clients);
+
+    clients.map(client => {
+        console.log(receiverId);
+        if (client.userId === receiverId)
+            return client.ws.send(JSON.stringify({ event: "Notifications" }));
+        console.log(client.userId);
+    });
+
+    console.log("ws : send the msg to the relevant client");
 
     return await prisma.notification.create({
         data: {

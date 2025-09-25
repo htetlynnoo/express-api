@@ -1,5 +1,8 @@
 // index.js
 const express = require("express");
+const app = express();
+require("express-ws")(app);
+
 const { $disconnect } = require("./prismaClient");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -8,8 +11,7 @@ const { usersRouter } = require("./routers/users");
 const { postsRouter } = require("./routers/posts");
 const { commentsRouter } = require("./routers/comments");
 const { auth, isOwner } = require("./middlewares/auth");
-
-const app = express();
+const { wsRouter } = require("./routers/ws");
 
 // Body-parser
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -22,6 +24,7 @@ app.use(cors());
 app.use(usersRouter);
 app.use(postsRouter);
 app.use(commentsRouter);
+app.use(wsRouter);
 
 // Middlewares
 app.use(auth, isOwner);
