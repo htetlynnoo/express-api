@@ -1,7 +1,7 @@
 // index.js
 const express = require("express");
 const app = express();
-require("express-ws")(app);
+// require("express-ws")(app);
 
 const { $disconnect } = require("./prismaClient");
 const bodyParser = require("body-parser");
@@ -11,7 +11,7 @@ const { usersRouter } = require("./routers/users");
 const { postsRouter } = require("./routers/posts");
 const { commentsRouter } = require("./routers/comments");
 const { auth, isOwner } = require("./middlewares/auth");
-const { wsRouter } = require("./routers/ws");
+// const { wsRouter } = require("./routers/ws");
 
 // Body-parser
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -20,19 +20,28 @@ app.use(bodyParser.json());
 // CORS
 app.use(cors());
 
+app.get("/", (req, res) => {
+    res.status(200).send("Hello World");
+});
+
 // Routers
 app.use(usersRouter);
 app.use(postsRouter);
 app.use(commentsRouter);
-app.use(wsRouter);
+// app.use(wsRouter);
 
 // Middlewares
 app.use(auth, isOwner);
 
-// Start server
-const server = app.listen(8080, () => {
-    console.log("Express is running at 8080");
-});
+// Only start server if NOT in test mode
+let server;
+if (process.env.NODE_ENV !== "test") {
+    server = app.listen(8080, () => {
+        console.log("Express is running at 8080");
+    });
+}
+
+// index.js
 
 // Graceful shutdown
 const gracefulShutdown = async () => {

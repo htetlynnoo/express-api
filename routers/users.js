@@ -4,8 +4,7 @@ const router = express.Router();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../prismaClient");
 
 const { auth } = require("../middlewares/auth");
 
@@ -18,7 +17,7 @@ router.use(bodyParser.json());
 const cors = require("cors");
 router.use(cors());
 
-const { clients } = require("./ws");
+// const { clients } = require("./ws");
 
 router.get("/verify", auth, async (req, res) => {
     const user = await prisma.user.findUnique({
@@ -32,7 +31,11 @@ router.get("/verify", auth, async (req, res) => {
             },
         },
     });
-    res.json(user);
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const { password, ...userWithoutPassword } = user; // remove password
+    res.json(userWithoutPassword);
 });
 
 router.get("/users/:id", async (req, res) => {
@@ -285,12 +288,12 @@ async function addNoti({ type, content, receiverId, postId, actorId }) {
     if (Number(receiverId) === Number(actorId)) return false;
     console.log(clients);
 
-    clients.map(client => {
-        console.log(receiverId);
-        if (client.userId === receiverId)
-            return client.ws.send(JSON.stringify({ event: "Notifications" }));
-        console.log(client.userId);
-    });
+    // clients.map(client => {
+    //     console.log(receiverId);
+    //     if (client.userId === receiverId)
+    //         return client.ws.send(JSON.stringify({ event: "Notifications" }));
+    //     console.log(client.userId);
+    // });
 
     console.log("ws : send the msg to the relevant client");
 
