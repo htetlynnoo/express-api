@@ -28,12 +28,20 @@ jobs:
             - name: Apply Prisma migrations (production-safe)
               run: npx prisma migrate deploy
               env:
-                  DATABASE_URL: ${{ secrets.DATABASE_URL }} # your production DB
+                  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+                  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+                  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+                  SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+                  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} # your production DB
 
             - name: Run tests
               run: npm test
               env:
-                  DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }} # tests can use prod or a test DB
+                  DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+                  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+                  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+                  SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+                  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} # tests can use prod or a test DB
 
     deploy:
         needs: build-and-test
