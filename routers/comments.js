@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require("../prismaClient");
 
 const { auth, isOwner } = require("../middlewares/auth");
 const bodyParser = require("body-parser");
@@ -12,6 +11,8 @@ router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 const cors = require("cors");
 router.use(cors());
+
+const { addNoti } = require("./users");
 
 // Create a new comment
 router.post("/posts/:id/comments", auth, async (req, res) => {
@@ -28,11 +29,22 @@ router.post("/posts/:id/comments", auth, async (req, res) => {
             },
             include: {
                 commentor: true,
+                post: true,
             },
+        });
+
+        await addNoti({
+            type: "COMMENT",
+            content: `commented your post`,
+
+            actorId: userId,
+            postId: postId,
+            receiverId: comment.post.userId,
         });
 
         res.json(comment);
     } catch (err) {
+        console.error("Create comment error:", err);
         res.status(500).json({ error: err.message });
     }
 });

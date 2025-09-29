@@ -1,30 +1,49 @@
-import express from "express";
+// index.js
+const express = require("express");
 const app = express();
-import { $disconnect } from "./prismaClient";
+// require("express-ws")(app);
 
-import { urlencoded, json } from "body-parser";
-app.use(urlencoded({ extended: false }));
-app.use(json());
+const { $disconnect } = require("./prismaClient");
+const bodyParser = require("body-parser");
+const cors = require("cors");
 
-import cors from "cors";
+const { usersRouter } = require("./routers/users");
+const { postsRouter } = require("./routers/posts");
+const { commentsRouter } = require("./routers/comments");
+const { auth, isOwner } = require("./middlewares/auth");
+// const { wsRouter } = require("./routers/ws");
+
+// Body-parser
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+// CORS
 app.use(cors());
 
-import { usersRouter } from "./routers/users";
-app.use(usersRouter); //router name thet mht yan
-
-import { postsRouter } from "./routers/posts";
-app.use(postsRouter);
-
-import { commentsRouter } from "./routers/comments";
-app.use(commentsRouter);
-
-import { auth, isOwner } from "./middlewares/auth";
-app.use(auth, isOwner);
-
-app.listen(8080, () => {
-    console.log("Express is running at 8080");
+app.get("/", (req, res) => {
+    res.status(200).send("Hello World");
 });
 
+// Routers
+app.use(usersRouter);
+app.use(postsRouter);
+app.use(commentsRouter);
+// app.use(wsRouter);
+
+// Middlewares
+app.use(auth, isOwner);
+
+// Only start server if NOT in test mode
+let server;
+if (process.env.NODE_ENV !== "test") {
+    server = app.listen(8080, () => {
+        console.log("Express is running at 8080");
+    });
+}
+
+// index.js
+
+// Graceful shutdown
 const gracefulShutdown = async () => {
     await $disconnect();
     console.log("Disconnected from the database");
@@ -37,4 +56,5 @@ const gracefulShutdown = async () => {
 process.on("SIGINT", gracefulShutdown);
 process.on("SIGTERM", gracefulShutdown);
 
-export default app;
+// Export app
+module.exports = app;
