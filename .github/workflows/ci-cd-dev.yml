@@ -1,0 +1,39 @@
+name: Express-Api CI/CD (Dev / Staging)
+
+on:
+    push:
+        branches:
+            - dev # Only run on dev
+    pull_request:
+        branches:
+            - dev
+
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 20
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Run tests
+              run: npm test
+              env:
+                  DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+
+    deploy:
+        needs: build-and-test
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Trigger Vercel Staging Deploy
+              run: |
+                  curl -X POST https://api.vercel.com/v1/integrations/deploy/prj_d0gS1Upj9H08qOGd6enjaoBQ6yXu/inIv2bKDet
